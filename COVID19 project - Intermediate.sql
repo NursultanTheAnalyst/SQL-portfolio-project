@@ -1,27 +1,26 @@
---iso_code должен состоять из трех букв. Есть ли в наборе iso_code, который не соответствует данному критерию?
+--iso_code must be three letters long. Is there an iso_code in the set that does not meet this criteria?
 
 SELECT iso_code
 FROM cases
 WHERE LENGTH(iso_code) > 3;
 
-
---Нам нужно узнать включили ли в наш набор данных острова. Найдите все названия стран в котором есть “Islands”.
+--We need to know if our dataset includes islands. Find all country names that contain "Islands".
 
 SELECT location, continent
 FROM regions
 WHERE location LIKE "%Islands%";
 
 
---Мы хотим убрать текст в скобках в названиях стран. Напишите запрос, который поможет нам с этой задачей.
+--We want to remove the text in brackets in country names. Write a query that will help us with this task.
 
 SELECT REGEXP_REPLACE(location, '\\(.*\\)',) AS Country_list
 FROM regions
 ORDER BY Country_list;
 
 
--- В какой стране вероятность смерти инфицированного человека была самой высокой?
---Вероятность смерти инфицированного человека = (количество смертей \ количество подтвержденных случаев) * 100
---Предоставьте название страны, дату наблюдения, вероятность смерти инфицированного человека.
+-- In which country was the probability of an infected person dying the highest?
+-- Probability of an infected person dying = (number of deaths \ number of confirmed cases) * 100
+-- Please provide the country name, date of observation, probability of an infected person dying.
 
 WITH CTE1 AS (SELECT
 c.iso_code,
@@ -41,11 +40,12 @@ SELECT MAX(prob)
 FROM CTE1);
 
 
---Какова доля зараженного населения и доля населения умершего от COVID-19 для каждой страны?
---Вероятность смерти инфицированного человека = (количество смертей \ количество подтвержденных случаев) * 100
---Предоставьте название страны, общее количество подтвержденных случаев, общее количество смертей, численность населения, 
-доля зараженного населения страны и доля населения страны умершего от COVID-19. Страна с наибольшей долей зараженного населения должна отображаться первой.
-
+--What is the proportion of the population infected and the proportion of the population that died from COVID-19 for each country?
+-Probability of death of an infected person = (number of deaths \ number of confirmed cases) * 100
+--Provide the country name, total number of confirmed cases, total number of deaths, population,
+the proportion of the country's population infected, and the proportion of the country's population that died from COVID-19. The country with the highest proportion of the population infected should be displayed first.
+  
+  
 WITH CTE1 AS (SELECT
 r.location,
 SUM(c.new_cases) AS all_cases,
@@ -68,10 +68,9 @@ prob_deaths
 FROM CTE1
 ORDER BY prob_ill DESC;
 
---Какова доля зараженного населения и доля населения умершего от COVID-19 в мире?
---Предоставьте общее количество подтвержденных случаев по всему миру, общее количество смертей, численность населения в мире, доля зараженного населения и доля
-населения умершего от COVID-19.
 
+-- What is the proportion of the population infected and the proportion of the population who died from COVID-19 in the world?
+-- Provide the total number of confirmed cases worldwide, the total number of deaths, the world population, the proportion of the population infected, and the proportion of the population who died from COVID-19.  
 
 WITH CTE1 AS ( SELECT
 SUM(c.new_cases) AS all_cases,
@@ -89,10 +88,9 @@ ROUND((all_deaths / all_population) * 100, 2) AS prob_death
 FROM CTE1;
 
 
---Какие страны хорошо справились с лечением?
---Предоставьте названия стран, первую дату наблюдения количество пациентов в неотложке в наборе данных, последнюю дату наблюдения количество пациентов в
-неотложке в наборе данных и разницу в количестве пациентов.
-
+--Which countries did well in treating cases?
+--Please provide country names, first observation date of ED patients in the dataset, last observation date of ED patients in the dataset, and difference in ED patients.
+  
 WITH CTE1 AS (SELECT
 r.location,
 h.iso_code,
@@ -131,9 +129,8 @@ FROM CTE2
 ORDER BY diff ASC;
 
 
---Как Великобритания справлялась с COVID-19?
---Предоставьте данные о новых подтвержденных случаях и смертей, о количестве новых тестов и новых доз вакцин, о количество пациентов, впервые поступивших в больницы и в
-отделения интенсивной терапии по месяцам. 
+--How has the UK coped with COVID-19?
+--Provide data on new confirmed cases and deaths, the number of new tests and new vaccine doses, the number of patients admitted to hospitals and intensive care units by month.
 
 SELECT
 EXTRACT(MONTH FROM c.date) AS month,
@@ -153,15 +150,15 @@ GROUP BY month
 ORDER BY month;
 
 
---Как менялось количество новых подтвержденных случаев на ежедневной основе внутри стран?
-Чтобы ответить на этот вопрос, воспользуйтесь относительным изменением. Относительное изменение = (новые случаи - новые случаи в предыдущий день) / новые
-случаи в предыдущий день * 100
-Предоставьте названия стран, дату наблюдения, новые подтвержденные случаи, новые случаи в предыдущий день, относительное изменение. Также добавьте столбец trend,
-который будет содержать следующую информацию:
-- ‘Increase’, если относительное изменение положительное;
-- ‘Decrease’, если относительное изменение отрицательное;
-- ‘No.change’, если нет изменении.
-
+--How has the number of new confirmed cases changed on a daily basis within countries?
+--To answer this question, use relative change. Relative change = (new cases - new cases on previous day) / new
+cases on previous day * 100
+--Provide country names, observation date, new confirmed cases, new cases on previous day, relative change. Also include a trend column,
+which will contain the following information:
+- ‘Increase’ if the relative change is positive;
+- ‘Decrease’ if the relative change is negative;
+- ‘No.change’ if there is no change.
+  
 
 WITH CTE1 AS (SELECT
 r.location,
@@ -190,11 +187,10 @@ ORDER BY location, date;
 
 
 
---В каких странах зафиксированы наибольшее количество подтвержденных случаев в период с 20 марта по 30 марта 2020 года?
---Мы хотим, чтобы страна с наибольшим количеством подтвержденных случаев в определенный день имела ранг 1, вторая по величине — ранг 2 и так далее. Вы должны
-найти топ-1 страну для каждого дня в период с 20 по 30 марта.
---Предоставьте данные о названии стран, дату наблюдения, новые подтвержденные случаи (можно вывести ранк, чтобы проверить что вы выбрали только топ-1 стран).
-
+--Which countries have the most confirmed cases between March 20 and March 30, 2020?
+--We want the country with the most confirmed cases on a given day to be rank 1, the second highest to be rank 2, and so on. You should
+find the top 1 country for each day between March 20 and March 30.
+--Provide data on country name, observation date, new confirmed cases (you can output the rank to check that you only selected the top 1 countries).
 
 WITH CTE1 AS (SELECT
 r.location,
@@ -216,9 +212,9 @@ WHERE rn = 1
 ORDER BY date;
 
 
---Какие 25 стран имели наибольшую смертность во время COVID-19?
---Смертность = (новые смерти / численность населения) * 100
---Предоставьте данные о названии стран, дату наблюдения, новые смерти, численность населения, и уровень смертности.
+--Which 25 countries had the highest deaths during COVID-19?
+--Deaths = (new deaths / population) * 100
+--Provide data on country name, observation date, new deaths, population, and death rate.
 
 WITH CTE1 AS (SELECT
 r.location,
